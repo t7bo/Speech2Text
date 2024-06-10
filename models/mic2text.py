@@ -7,20 +7,32 @@ import threading
 import uuid
 import subprocess
 
-load_dotenv()
-speech_key = os.getenv("speech_key")
-region = os.getenv("region")
-
 class Speech2TextModel:
-    def __init__(self, speech_key, region):
-        self.speech_key = speech_key
-        self.region = region
+    def __init__(self):
+        load_dotenv()
+        self.speech_key = os.getenv("speech_key")
+        self.region = os.getenv("region")
         self.recording = False
 
     @staticmethod
     def generate_unique_filename():
         unique_id = uuid.uuid4()
         return str(unique_id)
+    
+    def _check_mic_available(self):
+        p = pyaudio.PyAudio()
+        num_devices = p.get_host_api_info_by_index(0).get('deviceCount')
+        mic_available = False
+        for i in range(num_devices):
+            device_info = p.get_device_info_by_host_api_device_index(0, i)
+            if device_info.get('maxInputChannels') > 0:
+                print(f"Input Device id {i} - {device_info.get('name')}")
+                mic_available = True
+        p.terminate()
+        return mic_available
+
+    def is_mic_available(self):
+        return self._check_mic_available()
 
     def record_audio(self, output_file):
         chunk = 1024
@@ -30,26 +42,14 @@ class Speech2TextModel:
         p = pyaudio.PyAudio()  # creates an interface to PortAudio
         
         # Vérification des périphériques audio disponibles
-        info = p.get_host_api_info_by_index(0)
-        num_devices = info.get('deviceCount')
-        print(f"Nombre de périphériques audio : {num_devices}")
-
-        mic_available = False
-        for i in range(0, num_devices):
-            device_info = p.get_device_info_by_host_api_device_index(0, i)
-            if device_info.get('maxInputChannels') > 0:
-                print(f"Input Device id {i} - {device_info.get('name')}")
-                mic_available = True
-
-        # Si aucun microphone n'est disponible, essayez de l'activer via PulseAudio
-        if not mic_available:
+        if not self._check_mic_available():
             print("Aucun microphone disponible. Tentative d'activation via PulseAudio...")
             try:
                 subprocess.run(["pactl", "load-module", "module-loopback"], check=True)
             except subprocess.CalledProcessError as e:
                 print(f"Erreur lors de l'activation du micro: {e}")
                 return  # Arrêtez l'enregistrement si le micro ne peut pas être activé
-        
+            
         stream = p.open(format=sample_format,
                         channels=channels,
                         rate=fs,

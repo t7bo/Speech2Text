@@ -103,7 +103,7 @@ class GenerateResponseChain(Chain):
         return ['transcription', 'timestamp', 'sentiment', 'response']
 
 # Génération des modèles
-stt_model = Speech2TextModel(speech_key, region)
+stt_model = Speech2TextModel()
 # translation_model = TranslationModel()
 sentiment_model = SentimentAnalysisModel()
 generate_response_model = GenerateResponseModel()
