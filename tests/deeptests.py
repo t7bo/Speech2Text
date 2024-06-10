@@ -1,11 +1,20 @@
-""" 
-Test de Chargement des Variables d'Environnement
-    Vérifiez que toutes les variables d'environnement sont correctement chargées et accessibles.
+from models.mic2text import Speech2TextModel
+
+"""Test de Chargement des Variables d'Environnement
+    Vérifiez que toutes les variables d'environnement sont correctement chargées et accessibles."""
+def test_dotenv_Speech2TextModel():
+    model = Speech2TextModel()
+    assert model.speech_key is not None
+    assert model.region is not None
     
-Test de Disponibilité du Microphone
-    Vérifiez que le microphone est disponible et peut être activé si nécessaire.
-    
-Test des Permissions du Microphone
+"""Test de Disponibilité du Microphone
+    Vérifiez que le microphone est disponible et peut être activé si nécessaire."""
+def test_mic_available():
+    speech = Speech2TextModel()
+    is_mic_available = speech.is_mic_available()
+    assert is_mic_available == True
+
+"""Test des Permissions du Microphone
     Vérifiez que l'application gère correctement les erreurs lorsque les permissions d'accès au microphone ne sont pas accordées.
     
 Test de Détection d'Erreur d'Activation du Microphone
