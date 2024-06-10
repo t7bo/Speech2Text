@@ -48,6 +48,7 @@ class Speech2TextModel:
                 subprocess.run(["pactl", "load-module", "module-loopback"], check=True)
             except subprocess.CalledProcessError as e:
                 print(f"Erreur lors de l'activation du micro: {e}")
+                raise Exception("Aucun microphone disponible après tentative d'activation.")
                 return  # Arrêtez l'enregistrement si le micro ne peut pas être activé
             
         stream = p.open(format=sample_format,

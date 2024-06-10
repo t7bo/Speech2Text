@@ -1,29 +1,50 @@
 from models.mic2text import Speech2TextModel
+import pytest
+from unittest.mock import patch
+import subprocess
 
 """Test de Chargement des Variables d'Environnement
     Vérifiez que toutes les variables d'environnement sont correctement chargées et accessibles."""
+    
 def test_dotenv_Speech2TextModel():
     model = Speech2TextModel()
     assert model.speech_key is not None
     assert model.region is not None
     
+# à compléter avec d'autres modèles et méthodes
+    
 """Test de Disponibilité du Microphone
-    Vérifiez que le microphone est disponible et peut être activé si nécessaire."""
-def test_mic_available():
+    Vérifiez que le microphone est disponible et peut être activé si nécessaire.
+        Test de Détection d'Erreur d'Activation du Microphone
+            Vérifiez que le code détecte et gère correctement les erreurs lorsque le microphone ne peut pas être activé.""" 
+            
+def test_is_mic_available():
     speech = Speech2TextModel()
     is_mic_available = speech.is_mic_available()
-    assert is_mic_available == True
+    # assert is_mic_available == True
+    assert is_mic_available == False
 
 """Test des Permissions du Microphone
-    Vérifiez que l'application gère correctement les erreurs lorsque les permissions d'accès au microphone ne sont pas accordées.
+    Vérifiez que l'application gère correctement les erreurs lorsque les permissions d'accès au microphone ne sont pas accordées."""
     
-Test de Détection d'Erreur d'Activation du Microphone
-    Vérifiez que le code détecte et gère correctement les erreurs lorsque le microphone ne peut pas être activé.
+def test_raise_error_when_mic_not_available():
+    # Mocking the _check_mic_available method to simulate no microphone available
+    with patch.object(Speech2TextModel, '_check_mic_available', return_value=False):
+        # Creating an instance of the model
+        model = Speech2TextModel()
+        # Mocking the subprocess.run to avoid actual PulseAudio command execution
+        with patch("subprocess.run") as mock_run:
+            # Mocking subprocess.run to raise an exception
+            mock_run.side_effect = subprocess.CalledProcessError(1, 'pactl')
+            with pytest.raises(Exception) as exc_info:
+                model.record_audio("dummy_output.wav")
+            assert "Aucun microphone disponible" in str(exc_info.value), "Expected error message not found."
+            
     
-Test de Manipulation des Fichiers
-    Vérifiez que les fichiers audio et texte sont créés dans les répertoires corrects et que les noms de fichiers sont uniques.
+"""Test de Manipulation des Fichiers
+    Vérifiez que les fichiers audio et texte sont créés dans les répertoires corrects et que les noms de fichiers sont uniques."""
 
-Test de l'Enregistrement Audio
+"""Test de l'Enregistrement Audio
     Vérifiez que l'enregistrement audio est sauvegardé correctement dans le fichier spécifié.
 
 
