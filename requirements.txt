@@ -15,3 +15,5 @@ sacremoses
 pyaudio
 azure-ai-textanalytics
 openai
+# sudo apt update
+# sudo apt install pulseaudio

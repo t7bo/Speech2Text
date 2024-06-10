@@ -5,6 +5,7 @@ import pyaudio
 import wave
 import threading
 import uuid
+import subprocess
 
 load_dotenv()
 speech_key = os.getenv("speech_key")
@@ -27,6 +28,28 @@ class Speech2TextModel:
         channels = 1
         fs = 44100  # samples per second
         p = pyaudio.PyAudio()  # creates an interface to PortAudio
+        
+        # Vérification des périphériques audio disponibles
+        info = p.get_host_api_info_by_index(0)
+        num_devices = info.get('deviceCount')
+        print(f"Nombre de périphériques audio : {num_devices}")
+
+        mic_available = False
+        for i in range(0, num_devices):
+            device_info = p.get_device_info_by_host_api_device_index(0, i)
+            if device_info.get('maxInputChannels') > 0:
+                print(f"Input Device id {i} - {device_info.get('name')}")
+                mic_available = True
+
+        # Si aucun microphone n'est disponible, essayez de l'activer via PulseAudio
+        if not mic_available:
+            print("Aucun microphone disponible. Tentative d'activation via PulseAudio...")
+            try:
+                subprocess.run(["pactl", "load-module", "module-loopback"], check=True)
+            except subprocess.CalledProcessError as e:
+                print(f"Erreur lors de l'activation du micro: {e}")
+                return  # Arrêtez l'enregistrement si le micro ne peut pas être activé
+        
         stream = p.open(format=sample_format,
                         channels=channels,
                         rate=fs,
@@ -103,9 +126,3 @@ class Speech2TextModel:
         with open(text_output_file, "r", encoding="utf-8") as file:
             transcription = file.read()
         return transcription
-
-# Supprimer cet appel à la méthode `speak_to_microphone` ici pour éviter un deuxième enregistrement
-# stop_phrase = "stop session"
-# output_file = "/transcripts"
-# speech2text = Speech2TextModel(speech_key=speech_key, region=region)
-# speech2text.speak_to_microphone(stop_phrase, output_file=output_file)

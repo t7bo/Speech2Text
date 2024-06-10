@@ -14,8 +14,8 @@ import openai
 
 # Chargement des variables d'environnement
 load_dotenv()
-speech_key = os.getenv("AZURE_SUBSCRIPTION_KEY")
-region = os.getenv("AZURE_REGION")
+speech_key = os.getenv("speech_key")
+region = os.getenv("region")
 mongodb_uri = os.getenv("MONGODB_URI")
 mongodb_db_name = os.getenv("MONGODB_DB_NAME")
 mongodb_collection_name = os.getenv("MONGODB_COLLECTION_NAME")
